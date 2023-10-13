@@ -35,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editarContacto'])) {
     $contactoNombre = $_POST['contactoNombre'];
     $contactoEmail = $_POST['contactoEmail'];
 
-    // Lógica para actualizar el contacto en la base de datos
     $stmt = $bd->prepare("UPDATE contactos SET nombre = ?, email = ? WHERE id = ?");
     if ($stmt->execute([$contactoNombre, $contactoEmail, $contactoId])) {
         header('Location: index.php?page=home'); // Redirige a la página de inicio
@@ -44,6 +43,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editarContacto'])) {
         echo "Error al actualizar el contacto.";
     }
 }
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editarEvento'])) {
+    $eventoId = $_POST['eventoId'];
+    $eventoNombre = $_POST['eventoNombre'];
+    $fechaEvento = $_POST['fechaEvento'];
+
+    $stmt = $bd->prepare("UPDATE eventos SET nombre = ?, fecha = ? WHERE id = ?");
+    if ($stmt->execute([$eventoNombre, $fechaEvento, $eventoId])) {
+        header('Location: index.php?page=home'); // Redirige a la página de inicio
+        echo "Evento actualizado exitosamente."; // Muestra un mensaje de confirmación
+    } else {
+        echo "Error al actualizar el evento.";
+    }
+}
+
 
 // ELIMINAR
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminarContacto'])) {
@@ -56,6 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminarContacto'])) {
         echo "Contacto eliminado exitosamente."; // Muestra un mensaje de confirmación
     } else {
         echo "Error al eliminar el contacto.";
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminarEvento'])) {
+    $eventoId = $_POST['eventoId'];
+
+    $stmt = $bd->prepare("DELETE FROM eventos WHERE id = ?");
+    if ($stmt->execute([$eventoId])) {
+        header('Location: index.php?page=home'); // Redirige a la página de inicio
+        echo "Evento eliminado exitosamente."; // Muestra un mensaje de confirmación
+    } else {
+        echo "Error al eliminar el evento.";
     }
 }
 
@@ -155,8 +180,8 @@ $eventos = $consultaEventos->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= $contacto['nombre'] ?></td>
                     <td><?= $contacto['email'] ?></td>
                     <td>
-                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarContactoModal<?=$contacto['id']?>">Editar</button>
-                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarContactoModal<?=$contacto['id']?>">Eliminar</button>
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarContactoModal<?= $contacto['id'] ?>">Editar</button>
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarContactoModal<?= $contacto['id'] ?>">Eliminar</button>
                     </td>
                 </tr>
             <?php } ?>
@@ -180,8 +205,8 @@ $eventos = $consultaEventos->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= $evento['nombre'] ?></td>
                     <td><?= $evento['fecha'] ?></td>
                     <td>
-                        <button class="btn btn-warning">Editar</button>
-                        <button class="btn btn-danger">Eliminar</button>
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarEventoModal<?= $evento['id'] ?>">Editar</button>
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarEventoModal<?= $evento['id'] ?>">Eliminar</button>
                     </td>
                 </tr>
             <?php } ?>
