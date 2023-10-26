@@ -1,4 +1,6 @@
 -- Crear la tabla de usuarios
+create database agenda;
+use agenda;
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
