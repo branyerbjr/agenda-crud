@@ -11,9 +11,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $usuario = $stmt->fetch();
 
     if ($usuario) {
-        // Las credenciales son correctas, redirige al usuario a home.php
+        // Las credenciales son correctas, obtén el ID del usuario
+        $user_id = $usuario['id'];
+    
+        // Inicia una sesión si aún no está iniciada
+        session_start();
+    
+        // Almacena el ID del usuario en una variable de sesión
+        $_SESSION['user_id'] = $user_id;
+    
+        // Redirige al usuario a home.php
         header('Location: index.php?page=home');
     }
+    
 }
 ?>
 

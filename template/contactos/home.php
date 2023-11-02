@@ -1,14 +1,36 @@
 <?php
 include 'model/conexion.php';
-include  'template/contactos/header.php';
+include 'template/contactos/header.php';
+
+// ingresar sesion
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    // Ahora puedes usar $user_id en esta página para identificar al usuario logueado.
+    // Realiza las operaciones necesarias con el ID del usuario.
+} else {
+    // Si el usuario no ha iniciado sesión, redirige a la página de inicio de sesión.
+    header('Location: index.php');
+}
+// salir sesion
+if (isset($_POST['cerrarSesion'])) {
+    // Destruye la sesión actual
+    session_destroy();
+
+    // Redirige al usuario a la página de inicio de sesión
+    header('Location: index.php');
+    exit;
+}
+
 // AGREGAR 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['guardarContacto'])) {
     $contactoNombre = $_POST['contactoNombre'];
     $contactoEmail = $_POST['contactoEmail'];
+    $contactoNumber = $_POST['contactoTelefono'];
 
     // Lógica para guardar el contacto en la base de datos
-    $stmt = $bd->prepare("INSERT INTO contactos (nombre, email) VALUES (?, ?)");
-    if ($stmt->execute([$contactoNombre, $contactoEmail])) {
+    $stmt = $bd->prepare("INSERT INTO contactos (nombre, email, telefono, usuario_id) VALUES (?, ?, ?, ?)");
+    if ($stmt->execute([$contactoNombre, $contactoEmail, $contactoNumber, $user_id])) {
         header('Location: index.php?page=home'); // Redirige a la página de inicio
         echo "Contacto guardado exitosamente."; // Muestra un mensaje de confirmación
     } else {
@@ -21,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['guardarEvento'])) {
     $fechaEvento = $_POST['fechaEvento'];
 
     // Lógica para guardar el evento en la base de datos
-    $stmt = $bd->prepare("INSERT INTO eventos (nombre, fecha) VALUES (?, ?)");
-    if ($stmt->execute([$eventoNombre, $fechaEvento])) {
+    $stmt = $bd->prepare("INSERT INTO eventos (nombre, fecha, usuario_id) VALUES (?, ?, ?)");
+    if ($stmt->execute([$eventoNombre, $fechaEvento, $user_id])) {
         header('Location: index.php?page=home'); // Redirige a la página de inicio
         echo "Evento guardado exitosamente."; // Muestra un mensaje de confirmación
     } else {
@@ -85,85 +107,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminarEvento'])) {
 }
 
 // Obtener la lista de contactos
-$consultaContactos = $bd->query("SELECT * FROM contactos");
+$consultaContactos = $bd->query("SELECT * FROM contactos WHERE usuario_id = $user_id");
 $contactos = $consultaContactos->fetchAll(PDO::FETCH_ASSOC);
 
 // Obtener la lista de eventos
-$consultaEventos = $bd->query("SELECT * FROM eventos");
+$consultaEventos = $bd->query("SELECT * FROM eventos WHERE usuario_id = $user_id");
 $eventos = $consultaEventos->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
         <a class="navbar-brand" href="#">Mi Agenda</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <form method="post">
+                    <button type="submit" name="cerrarSesion" class="btn btn-link nav-link">Cerrar sesión</button>
+                </form>
+            </li>
+        </ul>
     </div>
 </nav>
 
 <div class="container mt-4">
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#agregarEventoModal">Agregar Evento</button>
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#agregarContactoModal">Agregar Contacto</button>
+    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#agregarTokenModal">Agregar Token</button>
 </div>
 
-<!-- Modales para agregar evento y contacto -->
-<div class="modal fade" id="agregarEventoModal" tabindex="-1" role="dialog" aria-labelledby="agregarEventoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="agregarEventoModalLabel">Agregar Evento</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Formulario para agregar evento -->
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="eventoNombre" class="form-label">Nombre del Evento</label>
-                        <input type="text" class="form-control" id="eventoNombre" name="eventoNombre">
-                    </div>
-                    <div class="mb-3">
-                        <label for="fechaEvento" class="form-label">Fecha del Evento</label>
-                        <input type="date" class="form-control" id="fechaEvento" name="fechaEvento">
-                    </div>
-                    <button type="submit" name="guardarEvento" class="btn btn-primary">Guardar Evento</button>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="agregarContactoModal" tabindex="-1" role="dialog" aria-labelledby="agregarContactoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="agregarContactoModalLabel">Agregar Contacto</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Formulario para agregar contacto -->
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="contactoNombre" class="form-label">Nombre del Contacto</label>
-                        <input type="text" class="form-control" id="contactoNombre" name="contactoNombre">
-                    </div>
-                    <div class="mb-3">
-                        <label for="contactoEmail" class="form-label">Email del Contacto</label>
-                        <input type="email" class="form-control" id="contactoEmail" name="contactoEmail">
-                    </div>
-                    <button type="submit" name="guardarContacto" class="btn btn-success">Guardar Contacto</button>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
 <div class="container mt-4">
     <h2>Contactos</h2>
     <table class="table">
@@ -171,6 +141,7 @@ $eventos = $consultaEventos->fetchAll(PDO::FETCH_ASSOC);
             <tr>
                 <th>Nombre</th>
                 <th>Email</th>
+                <th>Teléfono</th> <!-- Nuevo campo "Teléfono" -->
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -179,6 +150,7 @@ $eventos = $consultaEventos->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
                     <td><?= $contacto['nombre'] ?></td>
                     <td><?= $contacto['email'] ?></td>
+                    <td><?= $contacto['telefono'] ?></td> <!-- Nuevo campo "Teléfono" -->
                     <td>
                         <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editarContactoModal<?= $contacto['id'] ?>">Editar</button>
                         <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarContactoModal<?= $contacto['id'] ?>">Eliminar</button>
@@ -213,6 +185,7 @@ $eventos = $consultaEventos->fetchAll(PDO::FETCH_ASSOC);
         </tbody>
     </table>
 </div>
+<?php include 'template/contactos/agregar.php' ?>
 <?php include 'template/contactos/editar.php' ?>
 <?php include 'template/contactos/eliminar.php' ?>
 <?php include  'template/contactos/footer.php' ?>
