@@ -1,7 +1,7 @@
 <?php 
-$contrasena = "";
-$usuario = "root";
-$nombre_bd = "agenda";
+$contrasena = "GrL|KzH$c5";
+$usuario = "tecsup";
+$nombre_bd = "u275791159_agenda";
 
 try {
 	$bd = new PDO (
